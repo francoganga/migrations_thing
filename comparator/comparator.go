@@ -14,7 +14,7 @@ func (c *Comparator) columnsEqual(c1, c2 schema.Column) bool {
 	panic("todo")
 }
 
-func CompareTables(oldTable, newTable schema.Table) schema.TableDiff {
+func (c *Comparator) CompareTables(oldTable, newTable schema.Table) schema.TableDiff {
 
 	addedColumns := []schema.Column{}
 	changedColumns := map[string]schema.ColumnDiff{}
@@ -43,7 +43,7 @@ func CompareTables(oldTable, newTable schema.Table) schema.TableDiff {
 		}
 
 		// TODO: check if its ok to index by old name
-		newCol := newTable.Columns[oc.Name]
+		// newCol := newTable.Columns[oc.Name]
 		// check if columns are equal
 
 	}
@@ -63,7 +63,7 @@ func CompareTables(oldTable, newTable schema.Table) schema.TableDiff {
 
 }
 
-func CompareSchemas(oldSchema, newSchema schema.Schema) schema.SchemaDiff {
+func (c *Comparator) CompareSchemas(oldSchema, newSchema *schema.Schema) schema.SchemaDiff {
 
 	createdSchemas := []string{}
 	droppedSchemas := []string{}
@@ -99,6 +99,13 @@ func CompareSchemas(oldSchema, newSchema schema.Schema) schema.SchemaDiff {
 			// 	newSchema.Tables[tableName],
 			// )
 
+		}
+	}
+
+	for tableName, oldTable := range oldSchema.Tables {
+		_, exists := newSchema.Tables[tableName]
+		if !exists {
+			droppedTables = append(droppedTables, oldTable)
 		}
 	}
 

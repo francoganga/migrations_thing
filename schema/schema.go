@@ -14,6 +14,8 @@ type Column struct {
 	ColumnDefinition string
 }
 
+type Columns map[string]Column
+
 type Table struct {
 	Name           string
 	Columns        map[string]Column
@@ -21,6 +23,24 @@ type Table struct {
 	//ForeignKeyContraints []ForeignKeyContraint
 	//UniqueConstraints []UniqueConstraint
 }
+
+func (t *Table) Cols() []Column {
+	res := []Column{}
+
+	for _, c := range t.Columns {
+		res = append(res, c)
+	}
+
+	return res
+}
+
+func (t *Table) AddColumn(name, typ string) {
+	t.Columns[name] = Column{
+		Name: name,
+		Type: typ,
+	}
+}
+
 type Sequence struct {
 	InitialValue int
 }
@@ -37,14 +57,15 @@ type Asset struct {
 	Name      string
 }
 
-func New(tables []Table) *Schema {
+func New(name string) *Schema {
 
-	schema := &Schema{}
-	schema.Tables = make(map[string]Table)
-
-	for _, t := range tables {
-		schema.AddTable(t)
+	schema := &Schema{
+		Asset: Asset{
+			Name: name,
+		},
 	}
+
+	schema.Tables = make(map[string]Table)
 
 	return schema
 }
@@ -174,13 +195,13 @@ func CompareSchemas(oldSchema, newSchema Schema) SchemaDiff {
 	droppedSequences := []Sequence{}
 
 	for _, ns := range newSchema.Namespaces {
-		if !oldSchema.hasNamespace(ns) {
+		if !oldSchema.HasNamespace(ns) {
 			createdSchemas = append(createdSchemas, ns)
 		}
 	}
 
 	for _, ons := range oldSchema.Namespaces {
-		if !newSchema.hasNamespace(ons) {
+		if !newSchema.HasNamespace(ons) {
 			droppedSchemas = append(droppedSchemas, ons)
 		}
 	}
